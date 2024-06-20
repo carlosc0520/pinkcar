@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pink_car/widgets/login/Bienvenida.dart';
+import 'package:pink_car/widgets/login/RegisterConductoraArchivos.dart';
 
 void main() {
   runApp(const MyApp());
@@ -15,7 +15,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.deepPurple),
       ),
-      home: BienvenidaPage(),
+      home: RegisterConductoraArchivos(),
     );
   }
 }

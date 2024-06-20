@@ -4,6 +4,7 @@ import 'package:pink_car/client/Consultar.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:pink_car/widgets/login/OlvidastesContrasena.dart';
 import 'package:pink_car/widgets/login/Register.dart';
+import 'package:pink_car/widgets/login/RegisterConductor.dart';
 
 class AutenticacionPage extends StatefulWidget {
   final int tipo;
@@ -272,11 +273,15 @@ class _AutenticacionPageState extends State<AutenticacionPage> {
                               GestureDetector(
                                 onTap: () {
                                   Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            Register(tipo: widget.tipo)),
-                                  );
+                                      context,
+                                      widget.tipo == 1
+                                          ? MaterialPageRoute(
+                                              builder: (context) =>
+                                                  Register(tipo: widget.tipo))
+                                          : MaterialPageRoute(
+                                              builder: (context) =>
+                                                  RegisterConductor(
+                                                      tipo: widget.tipo)));
                                 },
                                 child: const Text(
                                   'Crear usuario',

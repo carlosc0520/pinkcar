@@ -4,17 +4,17 @@ import 'package:pink_car/client/Consultar.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'Autenticacion.dart';
 
-class Register extends StatefulWidget {
+class RegisterConductor extends StatefulWidget {
   final int tipo;
 
-  const Register({super.key, this.tipo = 1});
+  const RegisterConductor({super.key, this.tipo = 2});
 
   @override
   // ignore: library_private_types_in_public_api
-  _RegisterState createState() => _RegisterState();
+  _RegisterConductorState createState() => _RegisterConductorState();
 }
 
-class _RegisterState extends State<Register> {
+class _RegisterConductorState extends State<RegisterConductor> {
   final _formKey = GlobalKey<FormState>();
   final _nombresController = TextEditingController();
   final _emailController = TextEditingController();
@@ -25,47 +25,26 @@ class _RegisterState extends State<Register> {
 
   bool _isLoading = false;
 
-  void _handleRegister() async {
+  void _handleRegisterConductor() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
         _isLoading = true;
       });
 
+      // ignore: unused_local_variable
       final nombres = _nombresController.text.trim();
+      // ignore: unused_local_variable
       final email = _emailController.text.trim();
+      // ignore: unused_local_variable
       final celular = _celularController.text.trim();
+      // ignore: unused_local_variable
       final dni = _dniController.text.trim();
+      // ignore: unused_local_variable
       final password = _passwordController.text.trim();
+      // ignore: unused_local_variable
+      final tipo = widget.tipo;
 
-      try {
-        final respuesta = await _consultar.registrarUsuario(
-          nombres: nombres,
-          email: email,
-          celular: celular,
-          dni: dni,
-          password: password,
-          tipo: widget.tipo,
-        );
-
-        if (respuesta.essatisfactoria == true) {
-          // ignore: use_build_context_synchronously
-          _consultar.mostrarError(context, "Usuario registrado correctamente",
-              title: "Exito!", onOkPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => AutenticacionPage(tipo: widget.tipo),
-              ),
-            );
-          });
-        } else {
-          // ignore: use_build_context_synchronously
-          _consultar.mostrarError(
-              // ignore: use_build_context_synchronously
-              context,
-              respuesta.mensaje ?? "Error al registrar usuario");
-        }
-      } catch (e) {
+      try {} catch (e) {
         // ignore: use_build_context_synchronously
         _consultar.mostrarError(context, e.toString());
       } finally {
@@ -132,7 +111,7 @@ class _RegisterState extends State<Register> {
                             padding: const EdgeInsets.symmetric(vertical: 20.0),
                             children: <Widget>[
                               Text(
-                                'Registro de Usuario',
+                                'Registro de Conductora',
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.montserrat(
                                   fontSize: 24.0,
@@ -223,7 +202,7 @@ class _RegisterState extends State<Register> {
                               ),
                               const SizedBox(height: 20.0),
                               ElevatedButton(
-                                onPressed: _handleRegister,
+                                onPressed: _handleRegisterConductor,
                                 style: ElevatedButton.styleFrom(
                                   padding: EdgeInsets.zero,
                                   shape: RoundedRectangleBorder(
@@ -232,21 +211,30 @@ class _RegisterState extends State<Register> {
                                 ),
                                 child: Ink(
                                   decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(8.0),
-                                    color: Colors.black,
-                                  ),
+                                      borderRadius: BorderRadius.circular(8.0),
+                                      color: const Color.fromARGB(
+                                          255, 238, 82, 100)),
                                   child: Container(
                                     width: double.infinity,
                                     alignment: Alignment.center,
                                     padding: const EdgeInsets.symmetric(
                                         vertical: 12.0, horizontal: 20.0),
-                                    child: const Text(
-                                      'Registrarse',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 17.0,
-                                        color: Colors.white,
-                                      ),
+                                    child: const Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          'Continuar',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        SizedBox(width: 8),
+                                        Icon(
+                                          Icons.arrow_forward,
+                                          color: Colors.white,
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
