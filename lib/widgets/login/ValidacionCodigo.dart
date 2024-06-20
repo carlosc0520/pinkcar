@@ -1,53 +1,62 @@
+// ignore: file_names
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pink_car/client/Consultar.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
-import 'package:pink_car/widgets/login/OlvidastesContrasena.dart';
-import 'package:pink_car/widgets/login/Register.dart';
+import 'package:pink_car/widgets/login/Autenticacion.dart';
 
-class AutenticacionPage extends StatefulWidget {
+class Recovery extends StatefulWidget {
   final int tipo;
+  final String email;
 
-  const AutenticacionPage({super.key, required this.tipo});
+  const Recovery({super.key, required this.tipo, required this.email});
 
   @override
   // ignore: library_private_types_in_public_api
-  _AutenticacionPageState createState() => _AutenticacionPageState();
+  _RecoveryState createState() => _RecoveryState();
 }
 
-class _AutenticacionPageState extends State<AutenticacionPage> {
+class _RecoveryState extends State<Recovery> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+  final _codigoController = TextEditingController();
   final _consultar = ConsultarAPI();
 
-  bool _isLoading = false; // Estado para controlar el spinner de carga
+  bool _isLoading = false;
 
   void _handleSignIn() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
-        _isLoading = true; // Mostrar spinner de carga
+        _isLoading = true;
       });
 
-      // Obtener email y contraseña desde los controladores
       final email = _emailController.text.trim();
-      final password = _passwordController.text.trim();
+      final codigo = _codigoController.text.trim();
 
       try {
-        // Llamar al método getUsuario para la autenticación
-        final usuario = await _consultar.getUsuario(email, password);
-        if (usuario.status == true) {
-          print(usuario.role);
+        final respuesta = await _consultar.recoveryValidar(email, codigo);
+        if (respuesta.status == true) {
+          // ignore: use_build_context_synchronously
+          _consultar.mostrarError(context, respuesta.message, title: 'Éxito',
+              onOkPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => AutenticacionPage(tipo: widget.tipo)),
+            );
+          });
         } else {
-          _consultar.mostrarError(
-              context, usuario.message ?? 'Error de autenticación');
+          // Mostrar mensaje de error
+          // ignore: use_build_context_synchronously
+          _consultar.mostrarError(context, respuesta.message);
         }
       } catch (e) {
         // alerta de errror
+        // ignore: use_build_context_synchronously
         _consultar.mostrarError(context, e.toString());
       } finally {
         setState(() {
-          _isLoading = false; // Ocultar spinner de carga
+          _isLoading = false;
         });
       }
     }
@@ -55,11 +64,12 @@ class _AutenticacionPageState extends State<AutenticacionPage> {
 
   @override
   Widget build(BuildContext context) {
+    _emailController.text = widget.email;
+
     return Scaffold(
       body: Stack(
         fit: StackFit.expand,
         children: <Widget>[
-          // Fondo con imagen
           Image.asset(
             'assets/PinkCar.jpg',
             fit: BoxFit.cover,
@@ -74,7 +84,7 @@ class _AutenticacionPageState extends State<AutenticacionPage> {
                 color: const Color.fromARGB(255, 145, 145, 145)
                     .withOpacity(0.4), // Fondo oscuro transparente
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: <Widget>[
                     // Imagen con borde blanco
                     Container(
@@ -83,9 +93,8 @@ class _AutenticacionPageState extends State<AutenticacionPage> {
                         borderRadius: BorderRadius.circular(8.0),
                         child: Container(
                           decoration: BoxDecoration(
-                            border: Border.all(
-                                color: Colors.white,
-                                width: 13.0), // Borde blanco de grosor 2.0
+                            border:
+                                Border.all(color: Colors.white, width: 13.0),
                           ),
                           child: Image.asset(
                             'assets/image.png',
@@ -112,7 +121,9 @@ class _AutenticacionPageState extends State<AutenticacionPage> {
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: <Widget>[
                               Text(
-                                'Iniciar sesión',
+                                "Recuperar\n Cuenta",
+                                // centrar
+                                textAlign: TextAlign.center,
                                 style: GoogleFonts.montserrat(
                                   fontSize: 24.0,
                                   fontWeight: FontWeight.bold,
@@ -121,7 +132,7 @@ class _AutenticacionPageState extends State<AutenticacionPage> {
                               ),
                               const SizedBox(height: 10.0),
                               const Text(
-                                'Regístrate y continúa',
+                                'Ingrese los siguientes datos',
                                 style: TextStyle(
                                   fontSize: 14.0,
                                   color: Colors.grey,
@@ -142,18 +153,21 @@ class _AutenticacionPageState extends State<AutenticacionPage> {
                               const SizedBox(height: 8.0),
                               TextFormField(
                                 controller: _emailController,
-                                decoration: const InputDecoration(
+                                readOnly: true,
+                                decoration: InputDecoration(
                                   fillColor: Color(0xFFF5F5F5),
                                   filled: true,
                                   border: OutlineInputBorder(
                                     borderSide: BorderSide(
-                                      color: Color.fromARGB(255, 255, 180, 189),
+                                      color: Color.fromARGB(
+                                          255, 255, 180, 189), // Borde rosado
                                     ),
                                   ),
                                   enabledBorder: OutlineInputBorder(
                                     borderSide: BorderSide(
                                       width: 2.5,
-                                      color: Color.fromARGB(255, 255, 180, 189),
+                                      color: Color.fromARGB(
+                                          255, 255, 180, 189), // Borde rosado
                                     ),
                                   ),
                                 ),
@@ -172,7 +186,7 @@ class _AutenticacionPageState extends State<AutenticacionPage> {
                               Align(
                                 alignment: Alignment.centerLeft,
                                 child: Text(
-                                  'Contraseña',
+                                  'Código',
                                   style: GoogleFonts.montserrat(
                                     fontSize: 14.0,
                                     fontWeight: FontWeight.bold,
@@ -180,9 +194,10 @@ class _AutenticacionPageState extends State<AutenticacionPage> {
                                   ),
                                 ),
                               ),
+                              // campo maximo 5 caracteres y minimo 5
                               const SizedBox(height: 8.0),
                               TextFormField(
-                                controller: _passwordController,
+                                controller: _codigoController,
                                 decoration: const InputDecoration(
                                   fillColor: Color(0xFFF5F5F5),
                                   filled: true,
@@ -198,13 +213,12 @@ class _AutenticacionPageState extends State<AutenticacionPage> {
                                     ),
                                   ),
                                 ),
-                                obscureText: true,
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
-                                    return 'Por favor, ingrese su contraseña';
+                                    return 'Por favor, ingrese su código';
                                   }
-                                  if (value.length < 6) {
-                                    return 'La contraseña debe tener al menos 6 caracteres';
+                                  if (value.length != 8) {
+                                    return 'El código debe tener 8 caracteres';
                                   }
                                   return null;
                                 },
@@ -236,7 +250,7 @@ class _AutenticacionPageState extends State<AutenticacionPage> {
                                     padding: const EdgeInsets.symmetric(
                                         vertical: 12.0, horizontal: 24.0),
                                     child: Text(
-                                      'Ingresar',
+                                      'Verificar',
                                       style: GoogleFonts.montserrat(
                                         color: const Color.fromARGB(
                                             255, 56, 56, 56),
@@ -245,44 +259,6 @@ class _AutenticacionPageState extends State<AutenticacionPage> {
                                       ),
                                       textAlign: TextAlign.center,
                                     ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 20.0),
-                              GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            Olvidastescontrasena(
-                                                tipo: widget.tipo)),
-                                  );
-                                },
-                                child: const Text(
-                                  '¿Olvidaste tu contraseña?',
-                                  style: TextStyle(
-                                    fontSize: 14.0,
-                                    color: Colors.grey,
-                                    decoration: TextDecoration.underline,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 10.0),
-                              GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            Register(tipo: widget.tipo)),
-                                  );
-                                },
-                                child: const Text(
-                                  'Crear usuario',
-                                  style: TextStyle(
-                                    fontSize: 14.0,
-                                    color: Color(0xFFFD94A0),
                                   ),
                                 ),
                               ),

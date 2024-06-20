@@ -2,48 +2,54 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pink_car/client/Consultar.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
-import 'package:pink_car/widgets/login/OlvidastesContrasena.dart';
-import 'package:pink_car/widgets/login/Register.dart';
+import 'dart:convert';
 
-class AutenticacionPage extends StatefulWidget {
+import 'package:pink_car/widgets/login/ValidacionCodigo.dart';
+
+class Olvidastescontrasena extends StatefulWidget {
   final int tipo;
 
-  const AutenticacionPage({super.key, required this.tipo});
+  const Olvidastescontrasena({super.key, this.tipo = 1});
 
   @override
   // ignore: library_private_types_in_public_api
-  _AutenticacionPageState createState() => _AutenticacionPageState();
+  _OlvidastescontrasenaState createState() => _OlvidastescontrasenaState();
 }
 
-class _AutenticacionPageState extends State<AutenticacionPage> {
+class _OlvidastescontrasenaState extends State<Olvidastescontrasena> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
   final _consultar = ConsultarAPI();
 
-  bool _isLoading = false; // Estado para controlar el spinner de carga
+  bool _isLoading = false;
 
   void _handleSignIn() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
-        _isLoading = true; // Mostrar spinner de carga
+        _isLoading = true;
       });
 
-      // Obtener email y contraseña desde los controladores
       final email = _emailController.text.trim();
-      final password = _passwordController.text.trim();
 
       try {
-        // Llamar al método getUsuario para la autenticación
-        final usuario = await _consultar.getUsuario(email, password);
-        if (usuario.status == true) {
-          print(usuario.role);
+        final respuesta = await _consultar.recovery(email);
+        if (respuesta.status == true) {
+          // ignore: use_build_context_synchronously
+          _consultar.mostrarError(context, respuesta.message, title: "Éxito",
+              onOkPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) =>
+                      Recovery(tipo: widget.tipo, email: email)),
+            );
+          }); 
         } else {
-          _consultar.mostrarError(
-              context, usuario.message ?? 'Error de autenticación');
+          // ignore: use_build_context_synchronously
+          _consultar.mostrarError(context, respuesta.message);
         }
       } catch (e) {
-        // alerta de errror
+        // ignore: use_build_context_synchronously
         _consultar.mostrarError(context, e.toString());
       } finally {
         setState(() {
@@ -74,18 +80,16 @@ class _AutenticacionPageState extends State<AutenticacionPage> {
                 color: const Color.fromARGB(255, 145, 145, 145)
                     .withOpacity(0.4), // Fondo oscuro transparente
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: <Widget>[
-                    // Imagen con borde blanco
                     Container(
                       margin: const EdgeInsets.only(bottom: 20.0, top: 10),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(8.0),
                         child: Container(
                           decoration: BoxDecoration(
-                            border: Border.all(
-                                color: Colors.white,
-                                width: 13.0), // Borde blanco de grosor 2.0
+                            border:
+                                Border.all(color: Colors.white, width: 13.0),
                           ),
                           child: Image.asset(
                             'assets/image.png',
@@ -96,7 +100,6 @@ class _AutenticacionPageState extends State<AutenticacionPage> {
                         ),
                       ),
                     ),
-
                     Expanded(
                       child: Container(
                         width: double.infinity,
@@ -112,7 +115,11 @@ class _AutenticacionPageState extends State<AutenticacionPage> {
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: <Widget>[
                               Text(
-                                'Iniciar sesión',
+                                widget.tipo == 1
+                                    ? 'Recuperar \nContraseña\n Usuaria'
+                                    : 'Recuperar \nContraseña\n Conductora',
+                                // centrar
+                                textAlign: TextAlign.center,
                                 style: GoogleFonts.montserrat(
                                   fontSize: 24.0,
                                   fontWeight: FontWeight.bold,
@@ -121,7 +128,7 @@ class _AutenticacionPageState extends State<AutenticacionPage> {
                               ),
                               const SizedBox(height: 10.0),
                               const Text(
-                                'Regístrate y continúa',
+                                'Ingrese los siguientes datos',
                                 style: TextStyle(
                                   fontSize: 14.0,
                                   color: Colors.grey,
@@ -142,18 +149,20 @@ class _AutenticacionPageState extends State<AutenticacionPage> {
                               const SizedBox(height: 8.0),
                               TextFormField(
                                 controller: _emailController,
-                                decoration: const InputDecoration(
+                                decoration: InputDecoration(
                                   fillColor: Color(0xFFF5F5F5),
                                   filled: true,
                                   border: OutlineInputBorder(
                                     borderSide: BorderSide(
-                                      color: Color.fromARGB(255, 255, 180, 189),
+                                      color: Color.fromARGB(
+                                          255, 255, 180, 189), // Borde rosado
                                     ),
                                   ),
                                   enabledBorder: OutlineInputBorder(
                                     borderSide: BorderSide(
                                       width: 2.5,
-                                      color: Color.fromARGB(255, 255, 180, 189),
+                                      color: Color.fromARGB(
+                                          255, 255, 180, 189), // Borde rosado
                                     ),
                                   ),
                                 ),
@@ -164,47 +173,6 @@ class _AutenticacionPageState extends State<AutenticacionPage> {
                                   if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
                                       .hasMatch(value)) {
                                     return 'Por favor, ingrese un email válido';
-                                  }
-                                  return null;
-                                },
-                              ),
-                              const SizedBox(height: 20.0),
-                              Align(
-                                alignment: Alignment.centerLeft,
-                                child: Text(
-                                  'Contraseña',
-                                  style: GoogleFonts.montserrat(
-                                    fontSize: 14.0,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 8.0),
-                              TextFormField(
-                                controller: _passwordController,
-                                decoration: const InputDecoration(
-                                  fillColor: Color(0xFFF5F5F5),
-                                  filled: true,
-                                  border: OutlineInputBorder(
-                                    borderSide: BorderSide(
-                                      color: Color.fromARGB(255, 255, 180, 189),
-                                    ),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderSide: BorderSide(
-                                      width: 2.5,
-                                      color: Color.fromARGB(255, 255, 180, 189),
-                                    ),
-                                  ),
-                                ),
-                                obscureText: true,
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Por favor, ingrese su contraseña';
-                                  }
-                                  if (value.length < 6) {
-                                    return 'La contraseña debe tener al menos 6 caracteres';
                                   }
                                   return null;
                                 },
@@ -236,7 +204,7 @@ class _AutenticacionPageState extends State<AutenticacionPage> {
                                     padding: const EdgeInsets.symmetric(
                                         vertical: 12.0, horizontal: 24.0),
                                     child: Text(
-                                      'Ingresar',
+                                      'Enviar código',
                                       style: GoogleFonts.montserrat(
                                         color: const Color.fromARGB(
                                             255, 56, 56, 56),
@@ -245,44 +213,6 @@ class _AutenticacionPageState extends State<AutenticacionPage> {
                                       ),
                                       textAlign: TextAlign.center,
                                     ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 20.0),
-                              GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            Olvidastescontrasena(
-                                                tipo: widget.tipo)),
-                                  );
-                                },
-                                child: const Text(
-                                  '¿Olvidaste tu contraseña?',
-                                  style: TextStyle(
-                                    fontSize: 14.0,
-                                    color: Colors.grey,
-                                    decoration: TextDecoration.underline,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 10.0),
-                              GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            Register(tipo: widget.tipo)),
-                                  );
-                                },
-                                child: const Text(
-                                  'Crear usuario',
-                                  style: TextStyle(
-                                    fontSize: 14.0,
-                                    color: Color(0xFFFD94A0),
                                   ),
                                 ),
                               ),

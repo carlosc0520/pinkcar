@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'Inicio.dart';
 
 class UsuarioPage extends StatelessWidget {
+  const UsuarioPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,7 +25,7 @@ class UsuarioPage extends StatelessWidget {
                 children: <Widget>[
                   // imagen borde blanco
                   Container(
-                    margin: EdgeInsets.only(bottom: 20.0),
+                    margin: const EdgeInsets.only(bottom: 20.0),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8.0),
                       child: Container(
@@ -42,14 +44,13 @@ class UsuarioPage extends StatelessWidget {
                     ),
                   ),
 
-                  // Cuadro con texto "Seleccione el tipo de usuario"
                   Container(
                     width: double.infinity,
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(8.0),
                     ),
-                    padding: EdgeInsets.all(20.0),
+                    padding: const EdgeInsets.all(20.0),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -59,14 +60,12 @@ class UsuarioPage extends StatelessWidget {
                           style: GoogleFonts.montserrat(
                             fontSize: 22.0,
                             fontWeight: FontWeight.bold,
-                            color: Color.fromARGB(255, 238, 82, 100),
+                            color: const Color.fromARGB(255, 238, 82, 100),
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        SizedBox(height: 15.0),
-                        // Fila de dos cuadros con imagen y texto
+                        const SizedBox(height: 15.0),
                         Row(
-                          // alinear horizontal
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             GestureDetector(
@@ -78,30 +77,29 @@ class UsuarioPage extends StatelessWidget {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceEvenly,
                                 children: <Widget>[
-                                  // Cuadro 1: Cliente
                                   Container(
-                                    padding: EdgeInsets.symmetric(
+                                    padding: const EdgeInsets.symmetric(
                                         vertical: 10.0, horizontal: 25.0),
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(8.0),
                                       border: Border.all(
-                                          color: Color.fromARGB(
+                                          color: const Color.fromARGB(
                                               255, 255, 175, 184),
                                           width: 3),
-                                      color: Color.fromARGB(255, 255, 245, 255),
+                                      color: const Color.fromARGB(
+                                          255, 255, 245, 255),
                                     ),
                                     child: Column(
                                       children: <Widget>[
                                         Padding(
-                                          padding: const EdgeInsets.all(
-                                              8.0), // Padding para la imagen
+                                          padding: const EdgeInsets.all(8.0),
                                           child: Image.asset(
                                               'assets/image1.png',
                                               width: 60.0,
                                               height: 60.0),
                                         ),
-                                        SizedBox(height: 8.0),
-                                        Text(
+                                        const SizedBox(height: 8.0),
+                                        const Text(
                                           'Cliente',
                                           style: TextStyle(fontSize: 14.0),
                                         ),
@@ -124,15 +122,16 @@ class UsuarioPage extends StatelessWidget {
                                 children: <Widget>[
                                   // Cuadro 2: Conductora
                                   Container(
-                                    padding: EdgeInsets.symmetric(
+                                    padding: const EdgeInsets.symmetric(
                                         vertical: 10.0, horizontal: 25.0),
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(8.0),
                                       border: Border.all(
-                                          color: Color.fromARGB(
+                                          color: const Color.fromARGB(
                                               255, 255, 175, 184),
                                           width: 3),
-                                      color: Color.fromARGB(255, 255, 245, 255),
+                                      color: const Color.fromARGB(
+                                          255, 255, 245, 255),
                                     ),
                                     child: Column(
                                       children: <Widget>[
@@ -143,8 +142,8 @@ class UsuarioPage extends StatelessWidget {
                                               width: 60.0,
                                               height: 60.0),
                                         ),
-                                        SizedBox(height: 8.0),
-                                        Text(
+                                        const SizedBox(height: 8.0),
+                                        const Text(
                                           'Conductora',
                                           style: TextStyle(fontSize: 14.0),
                                         ),
@@ -156,17 +155,16 @@ class UsuarioPage extends StatelessWidget {
                             ),
                           ],
                         ),
-                        SizedBox(height: 15.0),
-                        // texto gris, Vemos por tu seguridad
-                        Text(
+                        const SizedBox(height: 15.0),
+                        const Text(
                           'Vemos por tu seguridad',
                           style: TextStyle(
                             fontSize: 10.0,
                             color: Color.fromARGB(255, 145, 145, 145),
                           ),
                         ),
-                        SizedBox(height: 15.0),
-                        Text(
+                        const SizedBox(height: 15.0),
+                        const Text(
                           'Pink Cart',
                           style: TextStyle(
                             fontSize: 18.0,

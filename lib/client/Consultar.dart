@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:pink_car/client/Model/StatusQueryModel.dart';
+import 'package:pink_car/client/Model/StatusResponseModel.dart';
 import 'package:pink_car/client/Model/UsuarioModel.dart';
 import 'package:flutter/material.dart';
 
@@ -30,7 +32,74 @@ class ConsultarAPI {
     }
   }
 
-  Future<void> mostrarError(BuildContext context, String mensaje) {
+  Future<Statusresponsemodel> recovery(String email) async {
+    final uri = Uri.parse(baseUrl).replace(
+      path: '/pinkcar/recovery-usuario',
+      queryParameters: {
+        'EMAIL': email,
+      },
+    );
+
+    final response = await http.get(uri, headers: headers);
+    if (response.statusCode != 200) {
+      throw Exception('Failed to recovery usuario');
+    }
+
+    Map<String, dynamic> responseBody = jsonDecode(response.body);
+    return Statusresponsemodel.fromJson(responseBody);
+  }
+
+  Future<Statusresponsemodel> recoveryValidar(
+      String email, String codigo) async {
+    final uri = Uri.parse(baseUrl).replace(
+      path: '/pinkcar/recovery-validar',
+      queryParameters: {
+        'EMAIL': email,
+        'CODIGO': codigo,
+      },
+    );
+
+    final response = await http.get(uri, headers: headers);
+    if (response.statusCode != 200) {
+      throw Exception('Failed to recovery validar');
+    }
+
+    Map<String, dynamic> responseBody = jsonDecode(response.body);
+    return Statusresponsemodel.fromJson(responseBody);
+  }
+
+  Future<Statusquerymodel> registrarUsuario({
+    required String nombres,
+    required String email,
+    required String celular,
+    required String dni,
+    required String password,
+    required int tipo,
+  }) async {
+    // peticion GET
+    final uri = Uri.parse(baseUrl).replace(
+      path: '/pinkcar/registrar-usuario',
+      queryParameters: {
+        'NOMBRES': nombres,
+        'EMAIL': email,
+        'CELULAR': celular,
+        'DNI': dni,
+        'PASSWORD': password,
+        'ROLE': tipo.toString(),
+      },
+    );
+
+    final response = await http.get(uri, headers: headers);
+    if (response.statusCode != 200) {
+      throw Exception('Failed to registrar usuario');
+    }
+
+    Map<String, dynamic> responseBody = jsonDecode(response.body);
+    return Statusquerymodel.fromJson(responseBody);
+  }
+
+  Future<void> mostrarError(BuildContext context, String mensaje,
+      {String title = 'Error', Function? onOkPressed}) {
     return showDialog<void>(
       context: context,
       barrierDismissible:
@@ -42,7 +111,7 @@ class ConsultarAPI {
             borderRadius: BorderRadius.circular(10.0), // Bordes redondeados
           ),
           title: Text(
-            'Error',
+            title,
             style: TextStyle(
               color: Colors.black, // Texto negro
               fontSize: 20.0,
@@ -74,6 +143,9 @@ class ConsultarAPI {
               ),
               onPressed: () {
                 Navigator.of(context).pop(); // Cerrar el diálogo
+                if (onOkPressed != null) {
+                  onOkPressed(); // Ejecutar la función proporcionada
+                }
               },
             ),
           ],

@@ -5,12 +5,12 @@ import 'Autenticacion.dart';
 class InicioPage extends StatelessWidget {
   final Map<String, dynamic> data;
 
-  InicioPage({required this.data});
+  const InicioPage({super.key, required this.data});
 
   @override
   Widget build(BuildContext context) {
     String titulo = data['TITULO'] ?? '';
-    int tipo = data['TIPO'] ?? 1; // Valor por defecto 1 si no se proporciona
+    int tipo = data['TIPO'] ?? 1;
 
     return Scaffold(
       body: Stack(
@@ -27,14 +27,12 @@ class InicioPage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   Container(
-                    margin: EdgeInsets.only(bottom: 20.0),
+                    margin: const EdgeInsets.only(bottom: 20.0),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8.0),
                       child: Container(
                         decoration: BoxDecoration(
-                          border: Border.all(
-                              color: Colors.white,
-                              width: 13.0), // Borde blanco de grosor 2.0
+                          border: Border.all(color: Colors.white, width: 13.0),
                         ),
                         child: Image.asset(
                           'assets/image.png',
@@ -51,8 +49,8 @@ class InicioPage extends StatelessWidget {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(8.0),
                     ),
-                    padding:
-                        EdgeInsets.symmetric(vertical: 60.0, horizontal: 16.0),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 60.0, horizontal: 16.0),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -62,29 +60,29 @@ class InicioPage extends StatelessWidget {
                           style: GoogleFonts.montserrat(
                             fontSize: 20.0,
                             fontWeight: FontWeight.bold,
-                            color: Color.fromARGB(255, 238, 82, 100),
+                            color: const Color.fromARGB(255, 238, 82, 100),
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        SizedBox(height: 10.0),
+                        const SizedBox(height: 10.0),
                         TextButton(
                           onPressed: () {
                             _navigate(context, tipo);
                           },
                           style: ButtonStyle(
-                            padding:
-                                MaterialStateProperty.all<EdgeInsetsGeometry>(
-                                    EdgeInsets.symmetric(horizontal: 16.0)),
-                            backgroundColor: MaterialStateProperty.all<Color>(
-                                Color.fromARGB(255, 238, 82, 100)),
-                            shape: MaterialStateProperty.all<
-                                RoundedRectangleBorder>(
+                            padding: WidgetStateProperty.all<
+                                    EdgeInsetsGeometry>(
+                                const EdgeInsets.symmetric(horizontal: 16.0)),
+                            backgroundColor: WidgetStateProperty.all<Color>(
+                                const Color.fromARGB(255, 238, 82, 100)),
+                            shape:
+                                WidgetStateProperty.all<RoundedRectangleBorder>(
                               RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8.0),
                               ),
                             ),
                           ),
-                          child: Row(
+                          child: const Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
@@ -94,9 +92,7 @@ class InicioPage extends StatelessWidget {
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              SizedBox(
-                                  width:
-                                      8), // Espacio entre el texto y el ícono
+                              SizedBox(width: 8),
                               Icon(
                                 Icons.arrow_forward,
                                 color: Colors.white,
