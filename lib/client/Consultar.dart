@@ -4,6 +4,7 @@ import 'package:pink_car/client/Model/StatusQueryModel.dart';
 import 'package:pink_car/client/Model/StatusResponseModel.dart';
 import 'package:pink_car/client/Model/UsuarioModel.dart';
 import 'package:flutter/material.dart';
+import 'package:pink_car/client/Model/UsuarioModel.dart';
 
 class ConsultarAPI {
   final String baseUrl;
@@ -12,7 +13,8 @@ class ConsultarAPI {
     'Access-Control-Allow-Origin': '*',
   };
 
-  ConsultarAPI({this.baseUrl = 'http://devcar0520-001-site14.etempurl.com'});
+  // ConsultarAPI({this.baseUrl = 'http://devcar0520-001-site14.etempurl.com'});
+  ConsultarAPI({this.baseUrl = 'https://localhost:7296'});
 
   Future<UsuarioModel> getUsuario(String email, String password) async {
     final uri = Uri.parse(baseUrl).replace(
@@ -98,7 +100,6 @@ class ConsultarAPI {
     return Statusquerymodel.fromJson(responseBody);
   }
 
-  // postConductora
   Future<Statusquerymodel> postConductora(
     String nombres,
     String email,
@@ -117,7 +118,7 @@ class ConsultarAPI {
     String DNI,
   ) async {
     // ES POST
-    
+
     final uri = Uri.parse(baseUrl)
         .replace(path: '/pinkcar/registrar-conductora', queryParameters: {
       "NOMBRES": nombres,
@@ -138,7 +139,7 @@ class ConsultarAPI {
     });
 
     final response = await http.get(uri, headers: headers);
-    
+
     if (response.statusCode != 200) {
       throw Exception('Failed to registrar usuario');
     }

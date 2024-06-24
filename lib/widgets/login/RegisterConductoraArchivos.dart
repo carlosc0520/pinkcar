@@ -294,7 +294,7 @@ class _RegisterConductoraArchivosState
                 ),
               ),
             ),
-            SizedBox(width: 10.0), // Espacio entre el label y el InkWell
+            const SizedBox(width: 10.0), // Espacio entre el label y el InkWell
             Expanded(
               flex: 7,
               child: InkWell(

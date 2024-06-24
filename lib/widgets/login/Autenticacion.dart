@@ -5,11 +5,13 @@ import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:pink_car/widgets/login/OlvidastesContrasena.dart';
 import 'package:pink_car/widgets/login/Register.dart';
 import 'package:pink_car/widgets/login/RegisterConductor.dart';
+import 'package:pink_car/widgets/usuaria/BienvenidaUsuaria.dart';
+import 'package:pink_car/widgets/usuaria/LayoutUsuaria.dart';
 
 class AutenticacionPage extends StatefulWidget {
   final int tipo;
 
-  const AutenticacionPage({super.key,  this.tipo = 1});
+  const AutenticacionPage({super.key, this.tipo = 1});
 
   @override
   // ignore: library_private_types_in_public_api
@@ -36,13 +38,19 @@ class _AutenticacionPageState extends State<AutenticacionPage> {
 
       try {
         // Llamar al método getUsuario para la autenticación
-        _consultar.getUsuario(email, password);
-        // if (usuario.status == true) {
-        //   print(usuario.role);
-        // } else {
-        //   _consultar.mostrarError(
-        //       context, usuario.message ?? 'Error de autenticación');
-        // }
+        var usuario = await _consultar.getUsuario(email, password);
+        if (usuario.status == true) {
+          print(usuario.role);
+          if (usuario.role == 1) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => Bienvenidausuaria()),
+            );
+          }
+        } else {
+          _consultar.mostrarError(
+              context, usuario.message ?? 'Error de autenticación');
+        }
       } catch (e) {
         // alerta de errror
         _consultar.mostrarError(context, e.toString());
@@ -56,6 +64,8 @@ class _AutenticacionPageState extends State<AutenticacionPage> {
 
   @override
   Widget build(BuildContext context) {
+    _emailController.text = 'CCARBAJALMT0520@GMAIL.COM';
+    _passwordController.text = '123456';
     return Scaffold(
       body: Stack(
         fit: StackFit.expand,
