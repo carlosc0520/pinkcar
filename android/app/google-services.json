@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "731565404720",
+    "project_id": "pink-car-20282",
+    "storage_bucket": "pink-car-20282.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:731565404720:android:5f12c63ef7061b06ebf3f5",
+        "android_client_info": {
+          "package_name": "com.e"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBUlMBCfmQFftNXL16jXBL0r5PrCYpZz94"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:731565404720:android:1394df509e06d0faebf3f5",
+        "android_client_info": {
+          "package_name": "com.example.pink_car"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBUlMBCfmQFftNXL16jXBL0r5PrCYpZz94"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:731565404720:android:4627996fd723d770ebf3f5",
+        "android_client_info": {
+          "package_name": "com.yourcompany.pink"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBUlMBCfmQFftNXL16jXBL0r5PrCYpZz94"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -12,7 +12,7 @@ class ConsultarAPI {
     'Access-Control-Allow-Origin': '*',
   };
 
-  ConsultarAPI({this.baseUrl = 'https://localhost:7296'});
+  ConsultarAPI({this.baseUrl = 'http://devcar0520-001-site14.etempurl.com'});
 
   Future<UsuarioModel> getUsuario(String email, String password) async {
     final uri = Uri.parse(baseUrl).replace(
@@ -90,6 +90,55 @@ class ConsultarAPI {
     );
 
     final response = await http.get(uri, headers: headers);
+    if (response.statusCode != 200) {
+      throw Exception('Failed to registrar usuario');
+    }
+
+    Map<String, dynamic> responseBody = jsonDecode(response.body);
+    return Statusquerymodel.fromJson(responseBody);
+  }
+
+  // postConductora
+  Future<Statusquerymodel> postConductora(
+    String nombres,
+    String email,
+    String celular,
+    String dni,
+    String password,
+    String NUMEROPLACA,
+    String NUMEROSERIE,
+    String COLOR,
+    String MODELO,
+    String TITULAR,
+    String MARCA,
+    String LICENCIA,
+    String SOAT,
+    String CERTIJOVEN,
+    String DNI,
+  ) async {
+    // ES POST
+    
+    final uri = Uri.parse(baseUrl)
+        .replace(path: '/pinkcar/registrar-conductora', queryParameters: {
+      "NOMBRES": nombres,
+      "EMAIL": email,
+      "CELULAR": celular,
+      "DNI": dni,
+      "PASSWORD": password,
+      'NUMEROPLACA': NUMEROPLACA,
+      'NUMEROSERIE': NUMEROSERIE,
+      'COLOR': COLOR,
+      'MODELO': MODELO,
+      'TITULAR': TITULAR,
+      'MARCA': MARCA,
+      'LICENCIA': LICENCIA,
+      'SOAT': SOAT,
+      'CERTIJOVEN': CERTIJOVEN,
+      'DNIA': DNI,
+    });
+
+    final response = await http.get(uri, headers: headers);
+    
     if (response.statusCode != 200) {
       throw Exception('Failed to registrar usuario');
     }

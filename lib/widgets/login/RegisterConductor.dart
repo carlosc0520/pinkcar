@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pink_car/client/Consultar.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
+import 'package:pink_car/widgets/login/RegisterConductoraArchivos.dart';
 import 'Autenticacion.dart';
 
 class RegisterConductor extends StatefulWidget {
@@ -44,7 +45,22 @@ class _RegisterConductorState extends State<RegisterConductor> {
       // ignore: unused_local_variable
       final tipo = widget.tipo;
 
-      try {} catch (e) {
+      try {
+        // navigaer a otra ventana, pasarle los datos en objeto
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => RegisterConductoraArchivos(datos: {
+              "NOMBRES": nombres,
+              "EMAIL": email,
+              "CELULAR": celular,
+              "DNI": dni,
+              "PASSWORD": password,
+              "TIPO": tipo,
+            },),
+          ),
+        );
+      } catch (e) {
         // ignore: use_build_context_synchronously
         _consultar.mostrarError(context, e.toString());
       } finally {

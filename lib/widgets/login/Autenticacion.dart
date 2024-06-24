@@ -9,7 +9,7 @@ import 'package:pink_car/widgets/login/RegisterConductor.dart';
 class AutenticacionPage extends StatefulWidget {
   final int tipo;
 
-  const AutenticacionPage({super.key, required this.tipo});
+  const AutenticacionPage({super.key,  this.tipo = 1});
 
   @override
   // ignore: library_private_types_in_public_api
@@ -36,13 +36,13 @@ class _AutenticacionPageState extends State<AutenticacionPage> {
 
       try {
         // Llamar al método getUsuario para la autenticación
-        final usuario = await _consultar.getUsuario(email, password);
-        if (usuario.status == true) {
-          print(usuario.role);
-        } else {
-          _consultar.mostrarError(
-              context, usuario.message ?? 'Error de autenticación');
-        }
+        _consultar.getUsuario(email, password);
+        // if (usuario.status == true) {
+        //   print(usuario.role);
+        // } else {
+        //   _consultar.mostrarError(
+        //       context, usuario.message ?? 'Error de autenticación');
+        // }
       } catch (e) {
         // alerta de errror
         _consultar.mostrarError(context, e.toString());
