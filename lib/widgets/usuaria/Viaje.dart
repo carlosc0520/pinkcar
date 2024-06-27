@@ -3,6 +3,11 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
+import 'package:pink_car/client/Model/TripDetails.dart';
+import 'package:pink_car/client/Model/TripDetailsViaje.dart';
+import 'package:pink_car/widgets/usuaria/TripDetailsView%20.dart';
+import 'MetodoPago.dart';
+import 'dart:math' show sin, cos, sqrt, atan2;
 
 class Viaje extends StatefulWidget {
   const Viaje({Key? key}) : super(key: key);
@@ -16,19 +21,28 @@ class ViajeState extends State<Viaje> {
   TextEditingController _originController = TextEditingController();
   TextEditingController _destinationController = TextEditingController();
   Set<Marker> _markers = {};
-  Set<Polyline> _polyLines = {}; // Conjunto de polilíneas para mostrar la ruta
+  Set<Polyline> _polyLines = {};
+  bool _isTripStarted = false;
+
   late CameraPosition _initialCameraPosition;
   List<String> _originSuggestions = [];
   List<String> _destinationSuggestions = [];
-  final String _googleApiKey = 'YOUR_GOOGLE_MAPS_API_KEY';
+  final String _googleApiKey = 'AIzaSyCwRdmvj1XRynTHqL4kDR_0O4Ifiz7z51M';
+  TripDetails _tripDetails = TripDetails();
 
   @override
   void initState() {
     super.initState();
-    _initialCameraPosition = CameraPosition(
-      target: LatLng(37.42796133580664, -122.085749655962),
+    _initialCameraPosition = const CameraPosition(
+      target: LatLng(-12.0820196, -76.928234),
       zoom: 14.0,
     );
+  }
+
+  void handleTripDetailsChange(TripDetails newTripDetails) {
+    setState(() {
+      _tripDetails = newTripDetails;
+    });
   }
 
   @override
@@ -42,7 +56,7 @@ class ViajeState extends State<Viaje> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Mapa de Viaje'),
+        title: const Text('Mapa de Viaje'),
       ),
       body: Stack(
         children: [
@@ -53,7 +67,7 @@ class ViajeState extends State<Viaje> {
               _controller.complete(controller);
             },
             markers: _markers,
-            polylines: _polyLines, // Mostrar polilíneas en el mapa
+            polylines: _polyLines,
           ),
           Positioned(
             top: 10.0,
@@ -68,9 +82,10 @@ class ViajeState extends State<Viaje> {
                       Expanded(
                         child: TextField(
                           controller: _originController,
-                          decoration: InputDecoration(
+                          decoration: const InputDecoration(
                             hintText: 'Partida...',
-                            contentPadding: EdgeInsets.symmetric(horizontal: 15.0),
+                            contentPadding:
+                                EdgeInsets.symmetric(horizontal: 15.0),
                           ),
                           onChanged: (value) {
                             _searchPlace(value, true);
@@ -81,7 +96,7 @@ class ViajeState extends State<Viaje> {
                         ),
                       ),
                       IconButton(
-                        icon: Icon(Icons.search),
+                        icon: const Icon(Icons.search),
                         onPressed: () {
                           String query = _originController.text;
                           _searchAndNavigate(query, isOrigin: true);
@@ -98,7 +113,8 @@ class ViajeState extends State<Viaje> {
                           title: Text(_originSuggestions[index]),
                           onTap: () {
                             _originController.text = _originSuggestions[index];
-                            _searchAndNavigate(_originSuggestions[index], isOrigin: true);
+                            _searchAndNavigate(_originSuggestions[index],
+                                isOrigin: true);
                             setState(() {
                               _originSuggestions.clear();
                             });
@@ -111,9 +127,10 @@ class ViajeState extends State<Viaje> {
                       Expanded(
                         child: TextField(
                           controller: _destinationController,
-                          decoration: InputDecoration(
+                          decoration: const InputDecoration(
                             hintText: 'Destino...',
-                            contentPadding: EdgeInsets.symmetric(horizontal: 15.0),
+                            contentPadding:
+                                EdgeInsets.symmetric(horizontal: 15.0),
                           ),
                           onChanged: (value) {
                             _searchPlace(value, false);
@@ -124,7 +141,7 @@ class ViajeState extends State<Viaje> {
                         ),
                       ),
                       IconButton(
-                        icon: Icon(Icons.search),
+                        icon: const Icon(Icons.search),
                         onPressed: () {
                           String query = _destinationController.text;
                           _searchAndNavigate(query, isOrigin: false);
@@ -140,8 +157,10 @@ class ViajeState extends State<Viaje> {
                         return ListTile(
                           title: Text(_destinationSuggestions[index]),
                           onTap: () {
-                            _destinationController.text = _destinationSuggestions[index];
-                            _searchAndNavigate(_destinationSuggestions[index], isOrigin: false);
+                            _destinationController.text =
+                                _destinationSuggestions[index];
+                            _searchAndNavigate(_destinationSuggestions[index],
+                                isOrigin: false);
                             setState(() {
                               _destinationSuggestions.clear();
                             });
@@ -155,12 +174,26 @@ class ViajeState extends State<Viaje> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          _handleGoToTrip();
-        },
-        label: Text('Ir al viaje'),
-        icon: Icon(Icons.directions_boat),
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          FloatingActionButton.extended(
+            onPressed: () {
+              _handleGoToTrip();
+            },
+            label: const Text('Agregar Detalles'),
+            icon: const Icon(Icons.add),
+          ),
+          const SizedBox(height: 16.0), // Espacio entre los botones
+          FloatingActionButton.extended(
+            onPressed: () {
+              _startTrip(); // Función para iniciar el viaje
+            },
+            label: const Text('Iniciar Viaje'),
+            icon: const Icon(Icons.directions_car),
+          ),
+        ],
       ),
     );
   }
@@ -170,37 +203,225 @@ class ViajeState extends State<Viaje> {
     String destination = _destinationController.text.trim();
 
     if (origin.isEmpty || destination.isEmpty) {
-      // Mostrar alerta si alguno de los campos está vacío
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: Text('Campos vacíos'),
-          content: Text('Por favor ingresa tanto la partida como el destino.'),
+          backgroundColor: Colors.white,
+          title: const Text('Campos vacíos'),
+          content:
+              const Text('Por favor ingresa tanto la partida como el destino.'),
           actions: <Widget>[
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Aceptar'),
+              child: const Text('Aceptar'),
             ),
           ],
         ),
       );
     } else {
-      // Ambos campos están llenos, proceder a marcar la ruta en el mapa
       await _markRoute(origin, destination);
+      showModalBottomSheet(
+        // ignore: use_build_context_synchronously
+        context: context,
+        isScrollControlled: true,
+        builder: (context) {
+          return DraggableScrollableSheet(
+            initialChildSize: 0.5,
+            minChildSize: 0.25,
+            maxChildSize: 0.75,
+            builder: (context, scrollController) {
+              return MetodoPago(
+                  scrollController: scrollController,
+                  handleTripDetailsChange: handleTripDetailsChange,
+                  tripDetails: _tripDetails);
+            },
+          );
+        },
+      );
     }
+  }
+
+  Future<void> _startTrip() async {
+    if (_tripDetails.driverId == null) {
+      _showErrorDialog('Conductora no seleccionada',
+          'Por favor selecciona una conductora antes de iniciar el viaje.');
+      return;
+    }
+
+    if (_tripDetails.paymentMethod == null) {
+      _showErrorDialog('Método de pago no seleccionado',
+          'Por favor selecciona un método de pago antes de iniciar el viaje.');
+      return;
+    }
+
+    if (_originController.text.isEmpty) {
+      _showErrorDialog('Campos vacíos',
+          'Por favor ingresa tanto la partida como el destino antes de iniciar el viaje.');
+      return;
+    }
+
+    if (_destinationController.text.isEmpty) {
+      _showErrorDialog('Campos vacíos',
+          'Por favor ingresa tanto la partida como el destino antes de iniciar el viaje.');
+      return;
+    }
+
+    if (_tripDetails.paymentMethod == 'Pago con Tarjeta') {
+      if (_tripDetails.cardNumber == null ||
+          _tripDetails.expiryDate == null ||
+          _tripDetails.cvv == null) {
+        _showErrorDialog('Datos de tarjeta incompletos',
+            'Por favor ingresa todos los datos de la tarjeta antes de iniciar el viaje.');
+        return;
+      }
+    }
+
+    LatLng originLatLng = await _getLatLngFromAddress(_originController.text);
+    LatLng destinationLatLng =
+        await _getLatLngFromAddress(_destinationController.text);
+
+    double distance = _calculateDistance(
+      originLatLng.latitude,
+      originLatLng.longitude,
+      destinationLatLng.latitude,
+      destinationLatLng.longitude,
+    );
+
+    if (!_isTripStarted) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return Dialog(
+            elevation: 0,
+            backgroundColor: Colors.transparent,
+            child: Stack(
+              alignment: Alignment.center,
+              children: <Widget>[
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  margin: const EdgeInsets.only(top: 30),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.rectangle,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(height: 16.0),
+                      LinearProgressIndicator(),
+                      SizedBox(height: 16.0),
+                      Text(
+                        'Calculando distancia y tarifa...',
+                        style: TextStyle(fontSize: 18),
+                      ),
+                    ],
+                  ),
+                ),
+                Positioned(
+                  top: -40,
+                  child: Image.asset(
+                    'assets/image2.png',
+                    width: 120,
+                    height: 120,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+
+      await Future.delayed(const Duration(seconds: 4));
+      Navigator.of(context).pop();
+    }
+    _isTripStarted = true;
+    TripDetailsViaje tripDetailsLocal = TripDetailsViaje(
+      originAddress: _originController.text,
+      destinationAddress: _destinationController.text,
+      distance: distance,
+      driverId: _tripDetails.driverId,
+      driverName: _tripDetails.driverName,
+      paymentMethod: _tripDetails.paymentMethod,
+      cardNumber: _tripDetails.cardNumber,
+      expiryDate: _tripDetails.expiryDate,
+      cvv: _tripDetails.cvv,
+    );
+
+    showModalBottomSheet(
+      // ignore: use_build_context_synchronously
+      context: context,
+      isScrollControlled: true,
+      builder: (context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.5,
+          minChildSize: 0.25,
+          maxChildSize: 0.75,
+          builder: (context, scrollController) {
+            return TripDetailsView(
+                tripDetails: tripDetailsLocal,
+                scrollController: scrollController);
+          },
+        );
+      },
+    );
+  }
+
+  Future<LatLng> _getLatLngFromAddress(String address) async {
+    final String baseUrl = 'https://maps.googleapis.com/maps/api/geocode/json';
+    final String request = '$baseUrl?address=$address&key=$_googleApiKey';
+    final response = await http.get(Uri.parse(request));
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      final location = data['results'][0]['geometry']['location'];
+      return LatLng(location['lat'], location['lng']);
+    } else {
+      throw Exception('Error fetching place coordinates');
+    }
+  }
+
+  double _calculateDistance(double startLatitude, double startLongitude,
+      double endLatitude, double endLongitude) {
+    const double pi = 3.1415926535897932;
+    const double earthRadius = 6378.137; // Radio de la Tierra en kilómetros
+
+    // Convertir grados a radianes
+    double lat1 = startLatitude * pi / 180.0;
+    double lon1 = startLongitude * pi / 180.0;
+    double lat2 = endLatitude * pi / 180.0;
+    double lon2 = endLongitude * pi / 180.0;
+
+    // Diferencia de latitud y longitud
+    double dLat = lat2 - lat1;
+    double dLon = lon2 - lon1;
+
+    // Aplicar la fórmula de Haversine
+    double a = sin(dLat / 2) * sin(dLat / 2) +
+        cos(lat1) * cos(lat2) * sin(dLon / 2) * sin(dLon / 2);
+    double c = 2 * atan2(sqrt(a), sqrt(1 - a));
+
+    // Distancia en kilómetros
+    double distance = earthRadius * c;
+    return distance;
   }
 
   Future<void> _markRoute(String origin, String destination) async {
     try {
-      final String baseUrl = 'https://maps.googleapis.com/maps/api/directions/json';
-      final String request = '$baseUrl?origin=$origin&destination=$destination&key=$_googleApiKey';
+      final String baseUrl =
+          'https://maps.googleapis.com/maps/api/directions/json';
+      final String request =
+          '$baseUrl?origin=$origin&destination=$destination&key=$_googleApiKey';
       final response = await http.get(Uri.parse(request));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        List<LatLng> points = _decodePoly(data['routes'][0]['overview_polyline']['points']);
+        List<LatLng> points =
+            _decodePoly(data['routes'][0]['overview_polyline']['points']);
         _addRoute(points);
       } else {
         throw Exception('Error fetching directions');
@@ -246,10 +467,10 @@ class ViajeState extends State<Viaje> {
   Future<void> _addRoute(List<LatLng> points) async {
     setState(() {
       _markers.clear();
-      _polyLines.clear(); // Limpiar polilíneas antes de añadir nuevas
+      _polyLines.clear();
       _markers.add(
         Marker(
-          markerId: MarkerId('origin'),
+          markerId: const MarkerId('origin'),
           position: points.first,
           infoWindow: InfoWindow(
             title: 'Partida',
@@ -259,7 +480,7 @@ class ViajeState extends State<Viaje> {
       );
       _markers.add(
         Marker(
-          markerId: MarkerId('destination'),
+          markerId: const MarkerId('destination'),
           position: points.last,
           infoWindow: InfoWindow(
             title: 'Destino',
@@ -269,16 +490,18 @@ class ViajeState extends State<Viaje> {
       );
       _polyLines.add(
         Polyline(
-          polylineId: PolylineId('route'),
+          polylineId: const PolylineId('route'),
           points: points,
-          color: Colors.blue, // Color de la polilínea
-          width: 5, // Ancho de la polilínea
+          color: Colors.blue,
+          width: 5,
         ),
       );
     });
 
     final GoogleMapController controller = await _controller.future;
-    controller.animateCamera(CameraUpdate.newLatLngBounds(_boundsFromLatLngList(points), 100.0));
+    controller.animateCamera(
+      CameraUpdate.newLatLngBounds(_boundsFromLatLngList(points), 100.0),
+    );
   }
 
   LatLngBounds _boundsFromLatLngList(List<LatLng> list) {
@@ -296,86 +519,85 @@ class ViajeState extends State<Viaje> {
       }
     }
     return LatLngBounds(
-      southwest: LatLng(x0!, y0!),
       northeast: LatLng(x1!, y1!),
+      southwest: LatLng(x0!, y0!),
     );
   }
 
   Future<void> _searchPlace(String input, bool isOrigin) async {
-    if (input.isEmpty) {
-      setState(() {
-        if (isOrigin) {
-          _originSuggestions.clear();
-        } else {
-          _destinationSuggestions.clear();
-        }
-      });
-      return;
-    }
-
-    final String baseUrl = 'https://maps.googleapis.com/maps/api/place/autocomplete/json';
+    const String baseUrl =
+        'https://maps.googleapis.com/maps/api/place/autocomplete/json';
     final String request = '$baseUrl?input=$input&key=$_googleApiKey';
     final response = await http.get(Uri.parse(request));
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
-      final List predictions = data['predictions'];
+      List<String> suggestions = [];
+      for (var item in data['predictions']) {
+        suggestions.add(item['description']);
+      }
       setState(() {
         if (isOrigin) {
-          _originSuggestions = predictions.map((prediction) => prediction['description'] as String).toList();
+          _originSuggestions = suggestions;
         } else {
-          _destinationSuggestions = predictions.map((prediction) => prediction['description'] as String).toList();
+          _destinationSuggestions = suggestions;
         }
       });
     } else {
-      throw Exception('Error fetching suggestions');
+      throw Exception('Error fetching place suggestions');
     }
   }
 
-  Future<void> _searchAndNavigate(String address, {required bool isOrigin}) async {
-    try {
-      final String baseUrl = 'https://maps.googleapis.com/maps/api/geocode/json';
-      final String request = '$baseUrl?address=$address&key=$_googleApiKey';
-      final response = await http.get(Uri.parse(request));
+  Future<void> _searchAndNavigate(String query,
+      {required bool isOrigin}) async {
+    const String baseUrl = 'https://maps.googleapis.com/maps/api/geocode/json';
+    final String request = '$baseUrl?address=$query&key=$_googleApiKey';
+    final response = await http.get(Uri.parse(request));
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final location = data['results'][0]['geometry']['location'];
-        final lat = location['lat'];
-        final lng = location['lng'];
-
-        _addMarker(LatLng(lat, lng), address);
-        final GoogleMapController controller = await _controller.future;
-        controller.animateCamera(CameraUpdate.newLatLngZoom(LatLng(lat, lng), 15.0));
-
-        setState(() {
-          if (isOrigin) {
-            _originSuggestions.clear();
-          } else {
-            _destinationSuggestions.clear();
-          }
-        });
-      } else {
-        throw Exception('Error fetching location');
-      }
-    } catch (e) {
-      print('Error al buscar dirección: $e');
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      final location = data['results'][0]['geometry']['location'];
+      final LatLng latLng = LatLng(location['lat'], location['lng']);
+      _addMarker(latLng, isOrigin ? 'Partida' : 'Destino', query);
+      final GoogleMapController controller = await _controller.future;
+      controller.animateCamera(CameraUpdate.newLatLngZoom(latLng, 14));
+    } else {
+      throw Exception('Error fetching place coordinates');
     }
   }
 
-  void _addMarker(LatLng position, String address) {
+  void _addMarker(LatLng position, String title, String snippet) {
     setState(() {
-      _markers.clear();
       _markers.add(
         Marker(
-          markerId: MarkerId('destination'),
+          markerId: MarkerId(title),
           position: position,
           infoWindow: InfoWindow(
-            title: address,
-            snippet: 'Lat: ${position.latitude}, Lng: ${position.longitude}',
+            title: title,
+            snippet: snippet,
           ),
         ),
       );
     });
+  }
+
+  // agregar conductor para dialog error
+  void _showErrorDialog(String title, String content) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        title: Text(title),
+        content: Text(content),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('Aceptar'),
+          ),
+        ],
+      ),
+    );
   }
 }

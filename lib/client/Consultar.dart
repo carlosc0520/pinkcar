@@ -5,7 +5,6 @@ import 'package:pink_car/client/Model/StatusQueryModel.dart';
 import 'package:pink_car/client/Model/StatusResponseModel.dart';
 import 'package:pink_car/client/Model/UsuarioModel.dart';
 import 'package:flutter/material.dart';
-import 'package:pink_car/client/Model/UsuarioModel.dart';
 
 class ConsultarAPI {
   final String baseUrl;
@@ -210,7 +209,7 @@ class ConsultarAPI {
     final uri = Uri.parse(baseUrl).replace(
       path: '/pinkcar/obtener-codigo',
       queryParameters: {
-        'ID': ID.toString(), 
+        'ID': ID.toString(),
       },
     );
 
@@ -219,7 +218,8 @@ class ConsultarAPI {
       List<dynamic> jsonResponse = jsonDecode(response.body);
 
       // Mapear la lista de JSON a una lista de CodigoModel
-      List<CodigoModel> codigos = jsonResponse.map((json) => CodigoModel.fromJson(json)).toList();
+      List<CodigoModel> codigos =
+          jsonResponse.map((json) => CodigoModel.fromJson(json)).toList();
       print(codigos);
       return codigos;
     } else {
