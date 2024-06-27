@@ -40,7 +40,7 @@ class _AutenticacionPageState extends State<AutenticacionPage> {
           if (usuario.role == 1) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => Bienvenidausuaria()),
+              MaterialPageRoute(builder: (context) => Bienvenidausuaria(id: usuario.id ?? 0)),
             );
           }
         } else {
@@ -60,8 +60,8 @@ class _AutenticacionPageState extends State<AutenticacionPage> {
 
   @override
   Widget build(BuildContext context) {
-    _emailController.text = 'CCARBAJALMT0520@GMAIL.COM';
-    _passwordController.text = '123456';
+    // _emailController.text = 'CCARBAJALMT0520@GMAIL.COM';
+    // _passwordController.text = '123456';
     return Scaffold(
       body: Stack(
         fit: StackFit.expand,

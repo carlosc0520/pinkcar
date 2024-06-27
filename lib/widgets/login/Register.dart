@@ -8,7 +8,6 @@ class Register extends StatefulWidget {
   final int tipo;
 
   const Register({super.key, this.tipo = 1});
-
   @override
   // ignore: library_private_types_in_public_api
   _RegisterState createState() => _RegisterState();

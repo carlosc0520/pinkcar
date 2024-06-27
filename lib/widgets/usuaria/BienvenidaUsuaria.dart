@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:pink_car/client/Consultar.dart';
 import 'package:pink_car/client/Model/CodigoModel.dart';
+import 'package:pink_car/client/Model/UsuarioModel.dart';
 import 'package:pink_car/widgets/usuaria/Viaje.dart';
 import 'package:pink_car/widgets/usuaria/drawer.dart';
 import 'package:pink_car/widgets/usuaria/footerCard.dart';
-import 'package:pink_car/client/Consultar.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class Bienvenidausuaria extends StatefulWidget {
   final int id;
-  Bienvenidausuaria({Key? key, this.id = 18}) : super(key: key);
+
+  Bienvenidausuaria({Key? key, required this.id}) : super(key: key);
 
   @override
   _BienvenidausuariaState createState() => _BienvenidausuariaState();
@@ -16,36 +18,46 @@ class Bienvenidausuaria extends StatefulWidget {
 
 class _BienvenidausuariaState extends State<Bienvenidausuaria> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
-  bool isLoading = true;
-  late List<CodigoModel> datos = [];
-  final _consultar = ConsultarAPI();
+  bool _isLoading = true;
+  UsuarioModel _usuario = UsuarioModel();
+  List<CodigoModel> _datos = [];
+  final ConsultarAPI _consultar = ConsultarAPI();
 
   @override
   void initState() {
     super.initState();
+    _loadUsuario();
     _consultarAPI();
+  }
+
+  Future<void> _loadUsuario() async {
+    try {
+      _usuario = await _consultar.getUsuarioUser(widget.id);
+    } catch (e) {
+      print('Error al cargar el usuario: $e');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _consultarAPI() async {
     try {
-      // datos = await _consultar.getCodigos(widget.id);
-      // / datos null
-      datos = [];
-      setState(() {
-        isLoading = false;
-      });
+      // Simulando una consulta a la API para obtener códigos
+      _datos = []; // Aquí deberías implementar la lógica real para obtener los datos
     } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
+      print('Error al consultar los datos: $e');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       key: _scaffoldKey,
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Container(
             padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
@@ -69,7 +81,7 @@ class _BienvenidausuariaState extends State<Bienvenidausuaria> {
                   },
                 ),
                 Text(
-                  "Bienvenida ...", // Título específico para esta pantalla
+                  "Bienvenida ${_usuario.nombres ?? ''}",
                   style: TextStyle(
                     fontSize: 20.0,
                     fontWeight: FontWeight.bold,
@@ -80,7 +92,7 @@ class _BienvenidausuariaState extends State<Bienvenidausuaria> {
             ),
           ),
           Expanded(
-            child: isLoading
+            child: _isLoading
                 ? Center(child: CircularProgressIndicator())
                 : Container(
                     alignment: Alignment.center,
@@ -90,7 +102,7 @@ class _BienvenidausuariaState extends State<Bienvenidausuaria> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          'Hola, Nombre', // Aquí puedes obtener el nombre del usuario si lo tienes disponible
+                          'Hola, ${_usuario.nombres ?? ''}',
                           style: TextStyle(
                             fontSize: 18.0,
                             fontWeight: FontWeight.bold,
@@ -98,55 +110,24 @@ class _BienvenidausuariaState extends State<Bienvenidausuaria> {
                         ),
                         SizedBox(height: 20.0),
                         Text(
-                          'Bienvenida', // Mensaje de bienvenida
+                          'Bienvenida',
                           style: TextStyle(
                             fontSize: 16.0,
                           ),
                         ),
                         SizedBox(height: 20.0),
                         Image.asset(
-                          'assets/image4.png', // Ruta de la imagen que deseas mostrar
+                          'assets/image4.png',
                           width: 50.0,
                           height: 50.0,
                           fit: BoxFit.cover,
                         ),
                         SizedBox(height: 20.0),
-                        datos.isNotEmpty
-                            ? Container(
-                                padding: EdgeInsets.all(12.0),
-                                decoration: BoxDecoration(
-                                  color: Colors
-                                      .pink[100], // Color del cuadro rosado
-                                  borderRadius: BorderRadius.circular(8.0),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.check_circle,
-                                      color: Colors.blue,
-                                    ),
-                                    SizedBox(width: 8.0),
-                                    Text(
-                                      datos.isNotEmpty
-                                          ? 'Tienes un cupón para tu próximo viaje: ${datos[0].codigo}' // Mensaje si hay datos de cupón
-                                          : 'Inicia tu próximo viaje ya', // Mensaje si no hay datos de cupón
-                                      style: TextStyle(
-                                        fontSize: 14.0,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              )
-                            : Text(
-                                'Inicia tu próximo viaje ya', // Mensaje si no hay datos de cupón
-                                style: TextStyle(
-                                  fontSize: 14.0,
-                                ),
-                              ),
+                        _buildCuponWidget(),
                         SizedBox(height: 20.0),
                         ElevatedButton(
                           onPressed: () {
-                            _iniciarViaje(); // Función para iniciar el viaje
+                            _iniciarViaje();
                           },
                           child: Text('Iniciar Viaje'),
                         ),
@@ -157,14 +138,47 @@ class _BienvenidausuariaState extends State<Bienvenidausuaria> {
           FooterCard(),
         ],
       ),
-      drawer: DrawerWidget(),
+      drawer: DrawerWidget(id: widget.id),
     );
+  }
+
+  Widget _buildCuponWidget() {
+    return _datos.isNotEmpty
+        ? Container(
+            padding: EdgeInsets.all(12.0),
+            decoration: BoxDecoration(
+              color: Colors.pink[100],
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.check_circle,
+                  color: Colors.blue,
+                ),
+                SizedBox(width: 8.0),
+                Text(
+                  'Tienes un cupón para tu próximo viaje: ${_datos[0].codigo}',
+                  style: TextStyle(
+                    fontSize: 14.0,
+                  ),
+                ),
+              ],
+            ),
+          )
+        : Text(
+            'Inicia tu próximo viaje ya',
+            style: TextStyle(
+              fontSize: 14.0,
+            ),
+          );
   }
 
   void _iniciarViaje() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => Viaje()),
+      MaterialPageRoute(builder: (context) => Viaje(id: widget.id)),
     );
   }
 }
+

@@ -5,12 +5,15 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:pink_car/client/Model/TripDetails.dart';
 import 'package:pink_car/client/Model/TripDetailsViaje.dart';
-import 'package:pink_car/widgets/usuaria/TripDetailsView%20.dart';
+import 'package:pink_car/widgets/usuaria/BienvenidaUsuaria.dart';
+import 'package:pink_car/widgets/usuaria/LayoutUsuaria.dart';
+import 'package:pink_car/widgets/usuaria/TripDetailsView.dart';
 import 'MetodoPago.dart';
 import 'dart:math' show sin, cos, sqrt, atan2;
 
 class Viaje extends StatefulWidget {
-  const Viaje({Key? key}) : super(key: key);
+  final int id;
+  const Viaje({Key? key, required this.id}) : super(key: key);
 
   @override
   State<Viaje> createState() => ViajeState();
@@ -33,6 +36,7 @@ class ViajeState extends State<Viaje> {
   @override
   void initState() {
     super.initState();
+    _tripDetails.idUsuario = widget.id;
     _initialCameraPosition = const CameraPosition(
       target: LatLng(-12.0820196, -76.928234),
       zoom: 14.0,
@@ -56,7 +60,44 @@ class ViajeState extends State<Viaje> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Mapa de Viaje'),
+        // titulo mas boton salir
+        title: Row(
+          children: [
+            GestureDetector(
+              onTap: () {
+                // preguntar si desea salir
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    backgroundColor: Colors.white,
+                    title: const Text('Salir'),
+                    content: const Text('¿Estás seguro de salir?'),
+                    actions: <Widget>[
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text('No'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pushAndRemoveUntil(
+                              MaterialPageRoute(
+                                  builder: (context) => Bienvenidausuaria(id: widget.id )),
+                              (route) => false);
+                        },
+                        child: const Text('Sí'),
+                      ),
+                    ],
+                  ),
+                );
+              },
+              child: Icon(Icons.arrow_back),
+            ),
+            SizedBox(width: 8.0),
+            Text('Viaje'),
+          ],
+        ),
       ),
       body: Stack(
         children: [
@@ -193,6 +234,60 @@ class ViajeState extends State<Viaje> {
             label: const Text('Iniciar Viaje'),
             icon: const Icon(Icons.directions_car),
           ),
+          // cancelar viaje
+          const SizedBox(height: 16.0), // Espacio entre los botones
+          FloatingActionButton.extended(
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  backgroundColor: Colors.white,
+                  title: const Text('Cancelar Viaje'),
+                  content: const Text('¿Estás seguro de cancelar el viaje?'),
+                  actions: <Widget>[
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context)
+                            .pop(); // Cierra el primer AlertDialog
+                      },
+                      child: const Text('No'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context)
+                            .pop(); // Cierra el primer AlertDialog
+
+                        // Reinicia todo
+                        _clearAll();
+
+                        // Muestra el segundo AlertDialog
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            backgroundColor: Colors.white,
+                            title: const Text('Viaje Cancelado'),
+                            content: const Text('El viaje ha sido cancelado.'),
+                            actions: <Widget>[
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context)
+                                      .pop(); // Cierra el segundo AlertDialog y vuelve al mapa
+                                },
+                                child: const Text('Aceptar'),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                      child: const Text('Sí'),
+                    ),
+                  ],
+                ),
+              );
+            },
+            label: const Text('Cancelar Viaje'),
+            icon: const Icon(Icons.cancel),
+          ),
         ],
       ),
     );
@@ -278,18 +373,24 @@ class ViajeState extends State<Viaje> {
       }
     }
 
-    LatLng originLatLng = await _getLatLngFromAddress(_originController.text);
-    LatLng destinationLatLng =
-        await _getLatLngFromAddress(_destinationController.text);
+    if (!_tripDetails.isTripStarted) {
+      LatLng originLatLng = await _getLatLngFromAddress(_originController.text);
+      LatLng destinationLatLng =
+          await _getLatLngFromAddress(_destinationController.text);
 
-    double distance = _calculateDistance(
-      originLatLng.latitude,
-      originLatLng.longitude,
-      destinationLatLng.latitude,
-      destinationLatLng.longitude,
-    );
+      double distance = _calculateDistance(
+        originLatLng.latitude,
+        originLatLng.longitude,
+        destinationLatLng.latitude,
+        destinationLatLng.longitude,
+      );
 
-    if (!_isTripStarted) {
+      _tripDetails.distance = distance;
+      _tripDetails.destination = _destinationController.text;
+      _tripDetails.origin = _originController.text;
+    }
+
+    if (!_tripDetails.isTripStarted) {
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -339,18 +440,6 @@ class ViajeState extends State<Viaje> {
       await Future.delayed(const Duration(seconds: 4));
       Navigator.of(context).pop();
     }
-    _isTripStarted = true;
-    TripDetailsViaje tripDetailsLocal = TripDetailsViaje(
-      originAddress: _originController.text,
-      destinationAddress: _destinationController.text,
-      distance: distance,
-      driverId: _tripDetails.driverId,
-      driverName: _tripDetails.driverName,
-      paymentMethod: _tripDetails.paymentMethod,
-      cardNumber: _tripDetails.cardNumber,
-      expiryDate: _tripDetails.expiryDate,
-      cvv: _tripDetails.cvv,
-    );
 
     showModalBottomSheet(
       // ignore: use_build_context_synchronously
@@ -363,12 +452,25 @@ class ViajeState extends State<Viaje> {
           maxChildSize: 0.75,
           builder: (context, scrollController) {
             return TripDetailsView(
-                tripDetails: tripDetailsLocal,
-                scrollController: scrollController);
+              tripDetails: _tripDetails,
+              scrollController: scrollController,
+              handleTripDetailsChange: handleTripDetailsChange,
+              clearAll: _clearAll,
+            );
           },
         );
       },
     );
+  }
+
+  // limpiar todo
+  void _clearAll() {
+    _tripDetails = TripDetails();
+    _originController.clear();
+    _destinationController.clear();
+    _markers.clear();
+    _polyLines.clear();
+    setState(() {});
   }
 
   Future<LatLng> _getLatLngFromAddress(String address) async {

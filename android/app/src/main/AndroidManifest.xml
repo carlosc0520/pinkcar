@@ -4,9 +4,9 @@
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     <application
         android:enableOnBackInvokedCallback="true"
-        android:label="pink_car"
+        android:label="PINK CAR"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/image">
         <meta-data android:name="com.google.android.geo.API_KEY"
                 android:value="AIzaSyCwRdmvj1XRynTHqL4kDR_0O4Ifiz7z51M"/>
 

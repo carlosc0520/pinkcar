@@ -1,39 +1,49 @@
 import 'package:flutter/material.dart';
+import 'package:pink_car/client/Consultar.dart';
+import 'package:pink_car/client/Model/EmprendimientoModel.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 
-class FooterCard extends StatelessWidget {
-  final List<Map<String, String>> imageData = [
-    {
-      'url':
-          'https://1.bp.blogspot.com/-Vz4DEENhYsI/XsABISxWl1I/AAAAAAAAcv8/dN9G4YsJG3gXCyc46LT-_n911qmmvsdjwCLcBGAsYHQ/s1600/E5.jpg',
-      'title': 'Imagen 1',
-      'link': 'https://www.ejemplo.com/enlace1',
-    },
-    {
-      'url':
-          'https://th.bing.com/th/id/OIP.chm63kcVXEErGRc0j5r4ewHaHc?w=1018&h=1024&rs=1&pid=ImgDetMain',
-      'title': 'Imagen 2',
-      'link': 'https://www.ejemplo.com/enlace2',
-    },
-    {
-      'url':
-          'https://th.bing.com/th/id/OIP.I1_zNHdgcL3_LiOZqs-9IwHaGM?w=800&h=670&rs=1&pid=ImgDetMain',
-      'title': 'Imagen 3',
-      'link': 'https://www.ejemplo.com/enlace3',
-    },
-    {
-      'url':
-          'https://th.bing.com/th/id/OIP.CcgKIfLwMLch1N6KTAB13gHaFw?w=2048&h=1593&rs=1&pid=ImgDetMain',
-      'title': 'Imagen 4',
-      'link': 'https://www.ejemplo.com/enlace4',
-    },
-  ];
+class FooterCard extends StatefulWidget {
+  const FooterCard({Key? key}) : super(key: key);
 
-  FooterCard({Key? key}) : super(key: key);
+  @override
+  _FooterCardState createState() => _FooterCardState();
+}
+
+class _FooterCardState extends State<FooterCard> {
+  List<EmprendimientoModel> imageData = [];
+  ConsultarAPI _consultar = ConsultarAPI();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadImageData();
+  }
+
+  Future<void> _loadImageData() async {
+    try {
+      imageData = await _consultar.getEmprendimientos(0);
+      setState(
+          () {}); // Actualiza el estado para reconstruir el widget con los datos cargados
+    } catch (e) {
+      print('Error al cargar los datos del footer: $e');
+      // Maneja el error según tu aplicación
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (imageData == null || imageData.isEmpty) {
+      return Container(
+        height: 120.0,
+        color: const Color.fromARGB(255, 238, 82, 100),
+        child: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     return Container(
       height: 120.0,
       color: const Color.fromARGB(255, 238, 82, 100),
@@ -45,7 +55,8 @@ class FooterCard extends StatelessWidget {
           autoPlayCurve: Curves.fastOutSlowIn,
           enableInfiniteScroll: true,
           autoPlayAnimationDuration: const Duration(milliseconds: 800),
-          viewportFraction: 0.33, // Ajusta esta fracción para mostrar tres imágenes a la vez
+          viewportFraction:
+              0.33, // Ajusta esta fracción para mostrar tres imágenes a la vez
         ),
         itemBuilder: (BuildContext context, int index, int realIndex) {
           return _buildFooterCard(imageData[index]);
@@ -54,10 +65,10 @@ class FooterCard extends StatelessWidget {
     );
   }
 
-  Widget _buildFooterCard(Map<String, String> imageData) {
+  Widget _buildFooterCard(EmprendimientoModel emprendimiento) {
     return GestureDetector(
       onTap: () {
-        _launchURL(imageData['link']!);
+        _launchURL(emprendimiento.imagenLink);
       },
       child: Card(
         color: Colors.transparent,
@@ -73,17 +84,26 @@ class FooterCard extends StatelessWidget {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8.0),
                   child: Image.network(
-                    imageData['url']!,
+                    emprendimiento.imagenLink,
                     width: double.infinity,
                     height: double.infinity,
-                    fit: BoxFit.contain, // Ajuste para que la imagen se muestre completa
+                    fit: BoxFit.contain,
+                    errorBuilder: (BuildContext context, Object exception,
+                        StackTrace? stackTrace) {
+                      return Image.network(
+                        'https://cdn-icons-png.flaticon.com/512/1257/1257249.png',
+                        width: double.infinity,
+                        height: double.infinity,
+                        fit: BoxFit.contain,
+                      );
+                    },
                   ),
                 ),
               ),
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
-                  imageData['title']!,
+                  emprendimiento.descripcion,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 12.0,

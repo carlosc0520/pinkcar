@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:pink_car/client/Model/CodigoModel.dart';
+import 'package:pink_car/client/Model/EmprendimientoModel.dart';
 import 'package:pink_car/client/Model/StatusQueryModel.dart';
 import 'package:pink_car/client/Model/StatusResponseModel.dart';
+import 'package:pink_car/client/Model/TripDetails.dart';
 import 'package:pink_car/client/Model/UsuarioModel.dart';
 import 'package:flutter/material.dart';
 
@@ -13,8 +15,8 @@ class ConsultarAPI {
     'Access-Control-Allow-Origin': '*',
   };
 
-  // ConsultarAPI({this.baseUrl = 'http://devcar0520-001-site14.etempurl.com'});
-  ConsultarAPI({this.baseUrl = 'https://localhost:7296'});
+  ConsultarAPI({this.baseUrl = 'http://devcar0520-001-site14.etempurl.com'});
+  // ConsultarAPI({this.baseUrl = 'https://localhost:7296'});
 // http://devcar0520-001-site14.etempurl.com/pinkcar/obtener-usuario
   Future<UsuarioModel> getUsuario(String email, String password) async {
     final uri = Uri.parse(baseUrl).replace(
@@ -22,6 +24,45 @@ class ConsultarAPI {
       queryParameters: {
         'EMAIL': email,
         'PASSWORD': password,
+      },
+    );
+
+    final response = await http.get(uri, headers: headers);
+    if (response.statusCode == 200) {
+      Map<String, dynamic> responseBody = jsonDecode(response.body);
+      return UsuarioModel.fromJson(responseBody);
+    } else {
+      throw Exception('Failed to load usuario');
+    }
+  }
+
+  // lista de getEmprendimientos
+  Future<List<EmprendimientoModel>> getEmprendimientos(int ID) async {
+    final uri = Uri.parse(baseUrl)
+        .replace(path: '/pinkcar/obtener-emprendimientos', queryParameters: {
+      'ID': ID.toString(),
+    });
+
+    final response = await http.get(uri, headers: headers);
+    if (response.statusCode == 200) {
+      List<dynamic> jsonResponse = jsonDecode(response.body);
+
+      List<EmprendimientoModel> emprendimientos = [];
+      for (var json in jsonResponse) {
+        emprendimientos.add(EmprendimientoModel.fromJson(json));
+      }
+
+      return emprendimientos;
+    } else {
+      throw Exception('Failed to load usuario');
+    }
+  }
+
+  Future<UsuarioModel> getUsuarioUser(int ID) async {
+    final uri = Uri.parse(baseUrl).replace(
+      path: '/pinkcar/obtener-user',
+      queryParameters: {
+        'ID': ID.toString(),
       },
     );
 
@@ -225,5 +266,47 @@ class ConsultarAPI {
     } else {
       throw Exception('Failed to load usuario');
     }
+  }
+
+  Future<Statusquerymodel> agregarViaje(TripDetails entidad) async {
+    final uri = Uri.parse(baseUrl).replace(
+      path: '/pinkcar/registrar-viaje',
+      queryParameters: {
+        'ORIGEN': entidad.origin,
+        'DESTINO': entidad.destination,
+        'IDCONDUCTORA': entidad.driverId.toString(),
+        'DISTANCIA': entidad.distance.toString(),
+        'TOTAL': entidad.total.toString(),
+        'IDUSUARIO': entidad.idUsuario.toString(),
+      },
+    );
+
+    final response = await http.get(uri, headers: headers);
+    if (response.statusCode != 200) {
+      throw Exception('Failed to registrar usuario');
+    }
+
+    Map<String, dynamic> responseBody = jsonDecode(response.body);
+    return Statusquerymodel.fromJson(responseBody);
+  }
+
+  Future<Statusquerymodel> registrarEmprendimiento(
+      String descripcion, String imagenLink, int id) async {
+    final uri = Uri.parse(baseUrl).replace(
+      path: '/pinkcar/registrar-empredimiento',
+      queryParameters: {
+        'DESCRIPCION': descripcion,
+        'IMAGENLINK': imagenLink.toString(),
+        'ID': id.toString(),
+      },
+    );
+
+    final response = await http.get(uri, headers: headers);
+    if (response.statusCode != 200) {
+      throw Exception('Failed to registrar usuario');
+    }
+
+    Map<String, dynamic> responseBody = jsonDecode(response.body);
+    return Statusquerymodel.fromJson(responseBody);
   }
 }

@@ -9,8 +9,10 @@ import 'package:url_launcher/url_launcher.dart';
 class LayoutUsuaria extends StatelessWidget {
   final String title; // Título de la vista
   final Widget child; // Contenido dinámico de la vista
+  int id;
 
-  LayoutUsuaria({this.title = "", this.child = const SizedBox()});
+  LayoutUsuaria(
+      {this.title = "", this.child = const SizedBox(), this.id = 15});
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
 
@@ -44,51 +46,52 @@ class LayoutUsuaria extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        key: _scaffoldKey,
-        body: Column(
-          children: [
-            Container(
-              padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-              height: 100.0,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                  colors: [
-                    Color.fromRGBO(245, 178, 186, 1),
-                    Color.fromRGBO(248, 133, 147, 1),
-                  ],
-                ),
-              ),
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: Icon(Icons.menu),
-                    onPressed: () {
-                      _scaffoldKey.currentState!.openDrawer();
-                    },
-                  ),
-                  Text(
-                    "Bienvenida ..... ", // Título específico para esta pantalla
-                    style: TextStyle(
-                      fontSize: 20.0,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
+      key: _scaffoldKey,
+      body: Column(
+        children: [
+          Container(
+            padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+            height: 100.0,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+                colors: [
+                  Color.fromRGBO(245, 178, 186, 1),
+                  Color.fromRGBO(248, 133, 147, 1),
                 ],
               ),
             ),
-            Expanded(
-              child: Container(
-                alignment: Alignment.center,
-                child:
-                    Column(), // Contenido dinámico específico para esta pantalla
-              ),
+            child: Row(
+              children: [
+                IconButton(
+                  icon: Icon(Icons.menu),
+                  onPressed: () {
+                    _scaffoldKey.currentState!.openDrawer();
+                  },
+                ),
+                Text(
+                  "Bienvenida ..... ", // Título específico para esta pantalla
+                  style: TextStyle(
+                    fontSize: 20.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
             ),
-            FooterCard()
-          ],
-        ),
-        drawer: DrawerWidget());
+          ),
+          Expanded(
+            child: Container(
+              alignment: Alignment.center,
+              child:
+                  Column(), // Contenido dinámico específico para esta pantalla
+            ),
+          ),
+          FooterCard()
+        ],
+      ),
+      drawer: DrawerWidget(id: id),
+    );
   }
 }

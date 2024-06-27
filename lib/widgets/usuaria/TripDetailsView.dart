@@ -3,17 +3,21 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:pink_car/client/Consultar.dart';
+import 'package:pink_car/client/Model/TripDetails.dart';
 import 'package:pink_car/client/Model/TripDetailsViaje.dart';
 
 class TripDetailsView extends StatefulWidget {
-  final TripDetailsViaje tripDetails;
+  final TripDetails tripDetails;
   final ScrollController scrollController;
-
-  // ignore: use_super_parameters
+  final Function(TripDetails) handleTripDetailsChange;
+  final Function? clearAll;
   const TripDetailsView({
     Key? key,
     required this.tripDetails,
     required this.scrollController,
+    required this.handleTripDetailsChange,
+    this.clearAll
   }) : super(key: key);
 
   @override
@@ -39,6 +43,8 @@ class _TripDetailsViewState extends State<TripDetailsView> {
     'PQR678'
   ];
 
+  ConsultarAPI _consultarAPI = ConsultarAPI();
+
   int _generateRandomNumber(int min, int max) =>
       min + _random.nextInt(max - min + 1);
 
@@ -47,6 +53,33 @@ class _TripDetailsViewState extends State<TripDetailsView> {
 
   String _generateRandomCarPlate() =>
       carPlates[_random.nextInt(carPlates.length)];
+  bool _isMounted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _isMounted = true;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!widget.tripDetails.isTripStarted) {
+        setState(() {
+          widget.tripDetails.isTripStarted = true;
+          widget.tripDetails.estrellas = _generateRandomNumber(1, 5);
+          widget.tripDetails.viajes = _generateRandomNumber(1, 1000);
+          widget.tripDetails.modelo = _generateRandomCarModel();
+          widget.tripDetails.matricula = _generateRandomCarPlate();
+          widget.tripDetails.total = widget.tripDetails.distance * 0.5;
+        });
+
+        widget.handleTripDetailsChange(widget.tripDetails);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -90,10 +123,8 @@ class _TripDetailsViewState extends State<TripDetailsView> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Expanded(
-                    // Ensures the row takes up all available horizontal space
                     child: Column(
                       children: [
-                        // Imagen del conductor
                         CircleAvatar(
                           radius: 50,
                           backgroundImage: AssetImage('assets/image1.png'),
@@ -106,29 +137,29 @@ class _TripDetailsViewState extends State<TripDetailsView> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Nombre del conductor
                         Text(
                           'Nombres: ${widget.tripDetails.driverName}',
                           style: const TextStyle(fontSize: 18),
                         ),
                         const SizedBox(height: 10),
-                        // Calificación del conductor (usando un icono de estrella)
-                        const Row(
+                        Row(
                           children: [
-                            Icon(Icons.star, color: Colors.yellow),
-                            Icon(Icons.star, color: Colors.yellow),
-                            Icon(Icons.star, color: Colors.yellow),
-                            Icon(Icons.star, color: Colors.yellow),
-                            Icon(Icons.star, color: Colors.yellow),
-                            SizedBox(width: 5),
-                            Text('(5 Estrellas)',
-                                style: TextStyle(fontSize: 16)),
+                            for (var i = 0;
+                                i < widget.tripDetails.estrellas;
+                                i++)
+                              const Icon(Icons.star, color: Colors.yellow),
+                            const SizedBox(width: 5),
+                            Text(
+                              '(${widget.tripDetails.estrellas} Estrellas)',
+                              style: const TextStyle(fontSize: 16),
+                            ),
                           ],
                         ),
                         const SizedBox(height: 10),
-                        // Número de viajes del conductor
-                        const Text('Viajes: +250',
-                            style: TextStyle(fontSize: 18)),
+                        Text(
+                          'Viajes: ${widget.tripDetails.viajes}',
+                          style: const TextStyle(fontSize: 18),
+                        ),
                       ],
                     ),
                   ),
@@ -140,13 +171,11 @@ class _TripDetailsViewState extends State<TripDetailsView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Tiempo estimado de llegada
                   Text(
                     'Llega en: ${_generateRandomNumber(10, 15)} min',
                     style: const TextStyle(fontSize: 18),
                   ),
                   const SizedBox(height: 10),
-                  // Método de pago
                   Text(
                     'Método de Pago: ${widget.tripDetails.paymentMethod}',
                     style: const TextStyle(fontSize: 18),
@@ -163,7 +192,6 @@ class _TripDetailsViewState extends State<TripDetailsView> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Información del vehículo
                         const Text(
                           'INFORMACIÓN DEL VEHÍCULO',
                           style: TextStyle(
@@ -184,7 +212,6 @@ class _TripDetailsViewState extends State<TripDetailsView> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // Categoría
                                   Row(
                                     children: [
                                       const Text(
@@ -198,7 +225,6 @@ class _TripDetailsViewState extends State<TripDetailsView> {
                                     ],
                                   ),
                                   const SizedBox(height: 5),
-                                  // Modelo del vehículo (aleatorio)
                                   Row(
                                     children: [
                                       const Text(
@@ -206,13 +232,12 @@ class _TripDetailsViewState extends State<TripDetailsView> {
                                         style: TextStyle(fontSize: 16),
                                       ),
                                       Text(
-                                        _generateRandomCarModel(),
+                                        widget.tripDetails.modelo,
                                         style: const TextStyle(fontSize: 16),
                                       ),
                                     ],
                                   ),
                                   const SizedBox(height: 5),
-                                  // Matrícula del vehículo (aleatoria)
                                   Row(
                                     children: [
                                       const Text(
@@ -220,13 +245,12 @@ class _TripDetailsViewState extends State<TripDetailsView> {
                                         style: TextStyle(fontSize: 16),
                                       ),
                                       Text(
-                                        _generateRandomCarPlate(),
+                                        widget.tripDetails.matricula,
                                         style: const TextStyle(fontSize: 16),
                                       ),
                                     ],
                                   ),
                                   const SizedBox(height: 5),
-                                  // Conductor
                                   Row(
                                     children: [
                                       const Text(
@@ -234,8 +258,7 @@ class _TripDetailsViewState extends State<TripDetailsView> {
                                         style: TextStyle(fontSize: 16),
                                       ),
                                       Text(
-                                        widget.tripDetails.driverName
-                                            .toString(),
+                                        '${widget.tripDetails.driverName}',
                                         style: const TextStyle(fontSize: 16),
                                       ),
                                     ],
@@ -243,13 +266,15 @@ class _TripDetailsViewState extends State<TripDetailsView> {
                                 ],
                               ),
                             ),
-                            // foto vehículo, centrado y ciruclo gris, debe ser la imagen
                             const CircleAvatar(
                               radius: 50,
                               backgroundColor:
                                   Color.fromARGB(255, 245, 245, 245),
-                              child: Icon(Icons.directions_car,
-                                  color: Colors.black, size: 50),
+                              child: Icon(
+                                Icons.directions_car,
+                                color: Colors.black,
+                                size: 50,
+                              ),
                             ),
                           ],
                         ),
@@ -265,23 +290,123 @@ class _TripDetailsViewState extends State<TripDetailsView> {
               height: 2,
               color: Colors.pinkAccent,
             ),
-            // Ruta de distancia en km
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.map),
-                const SizedBox(width: 10),
-                Text(
-                  'Ruta de distancia ${widget.tripDetails.distance.toStringAsFixed(2)} km',
-                  style: const TextStyle(fontSize: 18),
-                ),
-              ],
-            ),
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              const Icon(Icons.map),
+              const SizedBox(width: 10),
+              Text(
+                'Ruta de distancia ${widget.tripDetails.distance.toStringAsFixed(2)} km',
+                style: const TextStyle(fontSize: 18),
+              ),
+            ]),
+            SizedBox(height: 20),
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              const Icon(Icons.monetization_on),
+              const SizedBox(width: 10),
+              Text(
+                'Precio: \S/.${(widget.tripDetails.distance * 0.5).toStringAsFixed(2)}',
+                style: const TextStyle(fontSize: 18),
+              ),
+            ]),
             const SizedBox(height: 20),
-            // Botón para culminar viaje
             ElevatedButton(
-              onPressed: () {
-                // Acción al culminar viaje
+              onPressed: () async {  
+                await _consultarAPI
+                    .agregarViaje(widget.tripDetails)
+                    .then((value) {
+                      if(value.essatisfactoria == true){
+                        widget.clearAll!();
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              backgroundColor: Colors.white, // Fondo blanco
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10.0), // Bordes redondeados
+                              ),
+                              title: Text(
+                                'Viaje culminado',
+                                style: TextStyle(
+                                  color: Colors.black
+                                ),
+                              ),
+                              content: SingleChildScrollView(
+                                child: ListBody(
+                                  children: <Widget>[
+                                    Text(
+                                      'El viaje ha sido culminado con éxito',
+                                      style: TextStyle(
+                                        color: Colors.black
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              actions: <Widget>[
+                                TextButton(
+                                  child: Text(
+                                    'OK',
+                                    style: TextStyle(
+                                      color: Colors.red, // Botón OK en rojo
+                                      fontSize: 18.0,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  onPressed: () {
+                                    Navigator.of(context).pop(); // Cerrar el diálogo
+                                  },
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      }else{
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              backgroundColor: Colors.white, // Fondo blanco
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10.0), // Bordes redondeados
+                              ),
+                              title: Text(
+                                'Error',
+                                style: TextStyle(
+                                  color: Colors.black
+                                ),
+                              ),
+                              content: SingleChildScrollView(
+                                child: ListBody(
+                                  children: <Widget>[
+                                    Text(
+                                      'Ha ocurrido un error al culminar el viaje',
+                                      style: TextStyle(
+                                        color: Colors.black
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              actions: <Widget>[
+                                TextButton(
+                                  child: Text(
+                                    'OK',
+                                    style: TextStyle(
+                                      color: Colors.red, // Botón OK en rojo
+                                      fontSize: 18.0,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  onPressed: () {
+                                    Navigator.of(context).pop(); // Cerrar el diálogo
+                                  },
+                                ),
+                              ],
+                            );
+                          },
+                        );
+
+                      }
+                    });
               },
               child: const Text('Culminar Viaje'),
             ),
