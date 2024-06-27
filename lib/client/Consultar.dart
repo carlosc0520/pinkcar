@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:pink_car/client/Model/CodigoModel.dart';
 import 'package:pink_car/client/Model/StatusQueryModel.dart';
 import 'package:pink_car/client/Model/StatusResponseModel.dart';
 import 'package:pink_car/client/Model/UsuarioModel.dart';
@@ -15,7 +16,7 @@ class ConsultarAPI {
 
   // ConsultarAPI({this.baseUrl = 'http://devcar0520-001-site14.etempurl.com'});
   ConsultarAPI({this.baseUrl = 'https://localhost:7296'});
-
+// http://devcar0520-001-site14.etempurl.com/pinkcar/obtener-usuario
   Future<UsuarioModel> getUsuario(String email, String password) async {
     final uri = Uri.parse(baseUrl).replace(
       path: '/pinkcar/obtener-usuario',
@@ -202,5 +203,27 @@ class ConsultarAPI {
         );
       },
     );
+  }
+
+  // CODIGOS *********************************
+  Future<List<CodigoModel>> getCodigos(int ID) async {
+    final uri = Uri.parse(baseUrl).replace(
+      path: '/pinkcar/obtener-codigo',
+      queryParameters: {
+        'ID': ID.toString(), 
+      },
+    );
+
+    final response = await http.get(uri, headers: headers);
+    if (response.statusCode == 200) {
+      List<dynamic> jsonResponse = jsonDecode(response.body);
+
+      // Mapear la lista de JSON a una lista de CodigoModel
+      List<CodigoModel> codigos = jsonResponse.map((json) => CodigoModel.fromJson(json)).toList();
+      print(codigos);
+      return codigos;
+    } else {
+      throw Exception('Failed to load usuario');
+    }
   }
 }

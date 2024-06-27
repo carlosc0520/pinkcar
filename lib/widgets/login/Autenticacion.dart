@@ -24,23 +24,19 @@ class _AutenticacionPageState extends State<AutenticacionPage> {
   final _passwordController = TextEditingController();
   final _consultar = ConsultarAPI();
 
-  bool _isLoading = false; // Estado para controlar el spinner de carga
-
+  bool _isLoading = false;
   void _handleSignIn() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
-        _isLoading = true; // Mostrar spinner de carga
+        _isLoading = true; 
       });
 
-      // Obtener email y contraseña desde los controladores
       final email = _emailController.text.trim();
       final password = _passwordController.text.trim();
 
       try {
-        // Llamar al método getUsuario para la autenticación
         var usuario = await _consultar.getUsuario(email, password);
         if (usuario.status == true) {
-          print(usuario.role);
           if (usuario.role == 1) {
             Navigator.push(
               context,

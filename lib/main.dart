@@ -5,6 +5,7 @@ import 'package:pink_car/widgets/login/Inicio.dart';
 import 'package:pink_car/widgets/login/Register.dart';
 import 'package:pink_car/widgets/usuaria/BienvenidaUsuaria.dart';
 import 'package:pink_car/widgets/usuaria/LayoutUsuaria.dart';
+import 'package:pink_car/widgets/usuaria/Viaje.dart';
 
 void main() async {
   runApp(const MyApp());
@@ -20,7 +21,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.deepPurple),
       ),
-      home: Bienvenidausuaria(),
+      home: Viaje(),
     );
   }
 }

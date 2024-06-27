@@ -35,17 +35,17 @@ class FooterCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 180.0,
+      height: 120.0,
       color: const Color.fromARGB(255, 238, 82, 100),
       child: CarouselSlider.builder(
         itemCount: imageData.length,
         options: CarouselOptions(
-          height: 180.0,
+          height: 120.0,
           autoPlay: true,
           autoPlayCurve: Curves.fastOutSlowIn,
           enableInfiniteScroll: true,
           autoPlayAnimationDuration: const Duration(milliseconds: 800),
-          viewportFraction: 0.8,
+          viewportFraction: 0.33, // Ajusta esta fracción para mostrar tres imágenes a la vez
         ),
         itemBuilder: (BuildContext context, int index, int realIndex) {
           return _buildFooterCard(imageData[index]);
@@ -76,7 +76,7 @@ class FooterCard extends StatelessWidget {
                     imageData['url']!,
                     width: double.infinity,
                     height: double.infinity,
-                    fit: BoxFit.cover,
+                    fit: BoxFit.contain, // Ajuste para que la imagen se muestre completa
                   ),
                 ),
               ),
